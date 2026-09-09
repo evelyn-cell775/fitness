@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>健身打卡</title>
+<meta name="description" content="自用健身打卡小程序：每日打卡 + 动作库">
+<meta name="theme-color" content="#10b981">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app">
+
+  <!-- Tab 1 今日打卡（动态渲染） -->
+  <main id="page-today" class="page"></main>
+
+  <!-- Tab 2 动作库 -->
+  <main id="page-library" class="page hidden">
+    <header class="page-head">
+      <h1>动作库</h1>
+      <p class="page-sub" id="lib-count"></p>
+    </header>
+    <div class="lib-search"><input id="lib-q" class="input" placeholder="搜索动作…"></div>
+    <div class="chips" id="lib-chips"></div>
+    <div id="lib-list"></div>
+  </main>
+
+  <!-- Tab 3 资料（网上收集的相关资料） -->
+  <main id="page-materials" class="page hidden">
+    <header class="page-head">
+      <h1>资料</h1>
+      <p class="page-sub" id="mat-count"></p>
+    </header>
+    <div class="lib-search"><input id="mat-q" class="input" placeholder="搜索标题或内容…"></div>
+    <div class="chips" id="mat-chips"></div>
+    <div id="mat-list"></div>
+  </main>
+
+  <!-- Tab 4 统计与备份（动态渲染） -->
+  <main id="page-stats" class="page hidden"></main>
+
+  <button class="fab" data-action="add-ex" aria-label="新增">＋</button>
+
+  <nav class="tabbar">
+    <button class="tab active" data-tab="today"><span class="tab-ico">💪</span>打卡</button>
+    <button class="tab" data-tab="library"><span class="tab-ico">📚</span>动作库</button>
+    <button class="tab" data-tab="materials"><span class="tab-ico">📁</span>资料</button>
+    <button class="tab" data-tab="stats"><span class="tab-ico">📊</span>统计</button>
+  </nav>
+</div>
+
+<div id="overlay-root"></div>
+<div id="toast-root"></div>
+
+<script src="js/store.js"></script>
+<script src="js/seed.js"></script>
+<script src="js/sync.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

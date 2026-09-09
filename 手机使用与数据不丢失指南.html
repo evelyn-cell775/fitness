@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="Ju5ceeOVHrRJRrgOym4V5e">
+<head data-page-node-id="wbpe5kYlneuWXGf27TLqNN">
+<meta charset="UTF-8" data-page-node-id="oOdwQ43qP5l7qdOnwenEm3">
+<meta name="viewport" content="width=device-width, initial-scale=1" data-page-node-id="nBHqtuJdzURXJCJgiZXBNx">
+<title>健身打卡 · 手机使用与数据不丢失指南</title>
+<style>
+  :root{
+    --bg:#f6f8f7; --card:#fff; --text:#2c3a34; --muted:#7b8a83;
+    --border:#e6ebe8; --green:#10b981; --green-d:#059669; --green-l:#e8f7f1;
+    --amber:#f59e0b; --amber-l:#fef6e7; --red:#ef4444; --red-l:#fdecec;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font:15px/1.75 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:760px; margin:0 auto; padding:28px 18px 80px}
+  header.hd{text-align:center; margin-bottom:22px}
+  header.hd h1{font-size:25px; font-weight:800; margin:0 0 8px}
+  header.hd p{margin:0; color:var(--muted); font-size:14px}
+  .prog{position:sticky; top:0; z-index:9; background:var(--bg); padding:10px 0 14px; margin-bottom:4px}
+  .prog-bar{height:8px; background:#e2e8e5; border-radius:99px; overflow:hidden}
+  .prog-bar i{display:block; height:100%; width:0; background:var(--green); border-radius:99px; transition:width .35s}
+  .prog-txt{font-size:12px; color:var(--muted); margin-top:6px; text-align:right}
+  .card{background:var(--card); border:1px solid var(--border); border-radius:18px; padding:20px; margin:14px 0; box-shadow:0 1px 2px rgba(16,40,32,.04)}
+  .card.is-done{opacity:.55}
+  .card.is-done .step-no{background:#cfd8d4}
+  .step-head{display:flex; align-items:center; gap:12px; margin-bottom:6px}
+  .step-no{flex:none; width:30px; height:30px; border-radius:50%; background:var(--green); color:#fff; font-weight:700; font-size:15px; display:flex; align-items:center; justify-content:center; transition:background .3s}
+  .step-head h2{font-size:17px; margin:0; font-weight:700; flex:1}
+  .done-lbl{flex:none; font-size:12px; color:var(--muted); display:flex; align-items:center; gap:5px; cursor:pointer}
+  .done-lbl input{width:17px; height:17px; accent-color:var(--green); cursor:pointer}
+  .sub{font-size:13px; color:var(--muted); margin:0 0 14px}
+  h3{font-size:14px; margin:20px 0 8px; font-weight:700}
+  h3:first-of-type{margin-top:12px}
+  p{margin:0 0 10px}
+  ol,ul{margin:0 0 12px; padding-left:20px}
+  li{margin-bottom:8px}
+  b{font-weight:700}
+  code{background:#f0f3f1; padding:2px 6px; border-radius:6px; font-size:13px; font-family:ui-monospace,Menlo,Consolas,monospace; word-break:break-all}
+  .box{background:var(--green-l); border-left:3px solid var(--green); border-radius:0 12px 12px 0; padding:12px 14px; margin:12px 0; font-size:14px}
+  .box.warn{background:var(--amber-l); border-left-color:var(--amber)}
+  .box.danger{background:var(--red-l); border-left-color:var(--red)}
+  .box p:last-child{margin-bottom:0}
+  .fake-ui{background:#f4f7f5; border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin:10px 0; font-size:13.5px}
+  .fake-ui .row{display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-bottom:1px dashed #dde5e1}
+  .fake-ui .row:last-child{border-bottom:0}
+  .btn-fake{background:var(--green); color:#fff; border-radius:8px; padding:7px 14px; font-size:13px; font-weight:600}
+  .btn-fake.ghost{background:#fff; color:var(--green); border:1.5px solid var(--green)}
+  a{color:var(--green-d)}
+  .layers{display:grid; gap:10px; margin:14px 0}
+  .layer{display:flex; gap:12px; align-items:flex-start; background:#fafcfb; border:1px solid var(--border); border-radius:14px; padding:13px 15px}
+  .layer .ico{font-size:22px; line-height:1.2}
+  .layer .t{font-weight:700; font-size:14px}
+  .layer .d{font-size:13px; color:var(--muted); margin-top:2px}
+  .link-out{display:block; margin-top:10px; padding:13px; background:var(--green); color:#fff !important; text-align:center; border-radius:12px; font-weight:700; text-decoration:none; font-size:15px}
+  input.txt{width:100%; padding:11px 13px; border:1.5px solid var(--border); border-radius:11px; font-size:15px; font-family:inherit; background:#fff; color:var(--text)}
+  input.txt:focus{outline:none; border-color:var(--green)}
+  table{width:100%; border-collapse:collapse; font-size:13.5px; margin:10px 0}
+  th,td{text-align:left; padding:9px 10px; border-bottom:1px solid var(--border); vertical-align:top}
+  th{color:var(--muted); font-weight:600; font-size:12.5px}
+  .foot{text-align:center; color:var(--muted); font-size:12.5px; margin-top:26px; line-height:1.9}
+  @media print{ .prog{display:none} .card{break-inside:avoid; box-shadow:none} body{background:#fff} }
+</style>
+</head>
+<body data-page-node-id="ivLrtAZpXMOGCbfC6svC0Z">
+<div class="wrap" data-page-node-id="zqWBF85hi9OvsjKYEaGZoe">
+
+<header class="hd" data-page-node-id="WMFUHBGn7eYW0IPxEozsml">
+  <h1 data-page-node-id="J9TYfuTD53jat1LN59tvhw">📱 健身打卡 · 手机使用指南</h1>
+  <p data-page-node-id="NF6at7h0kKLuso8hhCyq6c">装到 iPhone 主屏幕 + 打卡数据永不丢失　|　全程约 15 分钟，只做一次</p>
+</header>
+
+<div class="prog" data-page-node-id="jvZK71riUS4BHrM2TvuO9F">
+  <div class="prog-bar" data-page-node-id="2wzwpQSklH0JfiWMBCke7e"><i id="bar" data-page-node-id="Mb9hGfgchKH7SU9EZ8Lm3j"></i></div>
+  <div class="prog-txt" id="ptxt" data-page-node-id="ntfVewLXDTRh37nurlz4xi">0/5 步</div>
+</div>
+
+<!-- ============ 先看懂 ============ -->
+<section class="card" data-page-node-id="u1mlAN6cSv2QWLePyNDH7O">
+  <div class="step-head" data-page-node-id="3gchsxiG792nDhvFtt1lvW">
+    <span class="step-no" data-page-node-id="RZnGpxLpMAtTum0dVNecdQ">💡</span>
+    <h2 data-page-node-id="IExvpg1ESWdKcZdPrrYgZR">先花 30 秒看懂：你的数据存在哪</h2>
+  </div>
+  <p class="sub" data-page-node-id="mfDzq9oUN7Z479jfHKlWBU">看懂这个，你就知道为什么要做后面的步骤了。</p>
+
+  <p data-page-node-id="6YmLTmEt46CBXOTQv3SjoM">打卡记录<b data-page-node-id="WUdfipoBRss9evWo5bgBZt">不是存在网页里，而是存在你手机的浏览器里</b>。好处是打开快、断网也能用；坏处是——</p>
+
+  <div class="box danger" data-page-node-id="Rj1osuEeEujGMNIJRMbEe9">
+    <p data-page-node-id="LckbCZSAmNcE613vCVmyPK"><b data-page-node-id="nnFA5EuJw0m4sRAk2NWSwb">这些情况数据会没：</b>清理浏览器缓存、换手机、手机丢了、iOS 空间不足自动清理、长时间不用被系统回收。</p>
+  </div>
+
+  <p data-page-node-id="vYCZTM6gRoDDLOjD5CSsAD">所以我们上<b data-page-node-id="m0WiBKvWMqBfvvKuSz1FGg">三层保险</b>，做完之后基本不可能丢：</p>
+
+  <div class="layers" data-page-node-id="CAznvuXL6R12C8aJJJSASq">
+    <div class="layer" data-page-node-id="WAVCjsa2gChkAdWznq9jaT">
+      <span class="ico" data-page-node-id="yFlTGuWc3G3rUlGtolsLeR">📲</span>
+      <div data-page-node-id="Cd0al0FpueBqrmRiMKdAGb"><div class="t" data-page-node-id="A2ILBcytWuhMSnciUTA128">第 1 层：装到主屏幕</div>
+      <div class="d" data-page-node-id="VFp2MC42bzSZFnNi5xtPvH">变成一个真正的 App 图标，全屏、离线可用，系统不会随便清它的缓存。</div></div>
+    </div>
+    <div class="layer" data-page-node-id="HybJ6kYoMSfWeHlD9eX9Ki">
+      <span class="ico" data-page-node-id="TEliPEEkT36LSCPj4nZXsr">☁️</span>
+      <div data-page-node-id="KJAF8Y9iQt8kT9bSEpnV7a"><div class="t" data-page-node-id="N32ElElpRclANMHo4LFtrt">第 2 层：云同步（重点）</div>
+      <div class="d" data-page-node-id="86GH5vHYUmBXLiOlP02e4p">每次打卡后<b data-page-node-id="UetJp0gWBlMj69PAMusi8R">自动</b>备份一份到你自己的 GitHub 私密空间。换手机、丢手机，填个密钥就能全部回来。</div></div>
+    </div>
+    <div class="layer" data-page-node-id="V9VZ5NOCOTF2h8y888EYBH">
+      <span class="ico" data-page-node-id="UNYH5AB9bj7D2zh7YnM0uZ">💾</span>
+      <div data-page-node-id="jBvBjvhZt9QUt32HEdtVlx"><div class="t" data-page-node-id="xWnwVc5bbaPBNyR3sOGB4K">第 3 层：手动导出（兜底）</div>
+      <div class="d" data-page-node-id="L5f8ZHLjjp1RjtOBvqmXr4">每月点一次导出，把备份文件存到微信收藏。以防万一。</div></div>
+    </div>
+  </div>
+
+  <div class="box" data-page-node-id="EYvlKzC6QSWPB4KzCTujN6">
+    <p data-page-node-id="O38UGJMc2QUDtu1kEFxUqk"><b data-page-node-id="QQ6TJtroJHUOdrJ3UAJGEa">已经升级好了：</b>我已经给你的代码加上了云同步功能（新增 <code data-page-node-id="zB1uA6yCQClsaKHAqxzteg">js/sync.js</code>），统计页会多出一个「☁️ 云同步」卡片。下面第 3 步就是教你怎么打开它。</p>
+  </div>
+</section>
+
+<!-- ============ 第 1 步 ============ -->
+<section class="card" id="s1" data-page-node-id="LKf9CtLvLwPje3mZ9O9UnC">
+  <div class="step-head" data-page-node-id="XVxEI6tWiRuyNO8Mgcfwto">
+    <span class="step-no" data-page-node-id="H7PRZspUvBSvy4zfcbtbVH">1</span>
+    <h2 data-page-node-id="260Rn3QNplQHuuApiyjJ60">把网页搬到网上</h2>
+    <label class="done-lbl" data-page-node-id="Yox394HGokLIciPWwsbE9b"><input type="checkbox" data-step="s1" data-page-node-id="zTCbatZY2atgit6EwTfCCB">完成</label>
+  </div>
+  <p class="sub" data-page-node-id="SQeLXuBHOyAHnIXv8bzQ2G">手机要能打开，网页必须先有个网址。用 GitHub Pages，免费、永久、不会被关。</p>
+
+  <h3 data-page-node-id="rLCjblEsicMoydETImG7Br">① 注册 GitHub（有账号就跳过）</h3>
+  <ol data-page-node-id="B2GrigFIxmnFYfgut2luKU">
+    <li data-page-node-id="DJ0iNqvGYtbNFS0JtBE198">电脑浏览器打开 <code data-page-node-id="dEWsusb0YzFOQ7sAwxutTr">github.com</code> → 点 <b data-page-node-id="R5ZKaUOvSi7i6nnzBXo35x">Sign up</b></li>
+    <li data-page-node-id="CTBFkqpnMndepjIiI8vevW">填邮箱 → 设密码 → 起个英文用户名（<b data-page-node-id="7irefarBwh9grjaFYhBkiL">这个用户名后面要用，记下来</b>）→ 邮箱验证</li>
+  </ol>
+
+  <h3 data-page-node-id="EFf7t94fHCDvTj2OfbldVV">② 新建一个仓库</h3>
+  <div class="fake-ui" data-page-node-id="rU3okEvj6616PYU0H8tgsv">
+    <div class="row" data-page-node-id="PFjel5gS3fGg3Xc1tDSdIT"><span data-page-node-id="wdDdLB8eYxGnWVUZtdG3Jz">右上角 <b data-page-node-id="4B18I3PkhV7agGpymaGXEU">＋</b> 号 → <b data-page-node-id="PsEZUydKYtkRs9zjBJAcad">New repository</b></span></div>
+    <div class="row" data-page-node-id="tncPOnkJBFbdCAcB2yaeYe"><span data-page-node-id="hA1a1hcYTcAI5FryDzbWeF">Repository name 填</span><code data-page-node-id="tzBjChc45uAck3t5AqoMVH">fitness</code></div>
+    <div class="row" data-page-node-id="D4LKwm5VOXMPgGGsVR5bdD"><span data-page-node-id="aW9AqwttR5d2UNmEvIAB0P">选择</span><span data-page-node-id="flQHwf7gjDy7k0FMlSRUqM"><b data-page-node-id="cirOVGWsswqIFQjuWO37CO">● Public</b>（免费方案必须公开）</span></div>
+    <div class="row" data-page-node-id="6VSp5gW1q2H5OJ2ANuBROe"><span data-page-node-id="hQQs5as8mEr4fEnPtxVtVJ">勾选</span><span data-page-node-id="khdEPAbhFNsO2gzwJO0551">Add a README file</span></div>
+    <div class="row" data-page-node-id="EZG8QEXp31ul22C3OvuSK3"><span data-page-node-id="2mUnpJIPdzUmrUx43egGwv">点绿色按钮</span><span class="btn-fake" data-page-node-id="CAdIzFiGHTaekwzNVHBi5g">Create repository</span></div>
+  </div>
+  <div class="box" data-page-node-id="CcZJIEmLNpK0FBo0OE0Bfw"><p data-page-node-id="5UOvq8PRZKiytplCHYz9D0">公开的是<b data-page-node-id="eUAuckClXl3UGXZX7K5uTI">代码</b>，不是你的打卡数据。打卡数据只存在你手机里和你自己的私密备份里，别人看不到。</p></div>
+
+  <h3 data-page-node-id="hpMbdP9nQtwN92r5iCHOdN">③ 上传文件</h3>
+  <ol data-page-node-id="4wWLlncwtsA4hAXOMqGd98">
+    <li data-page-node-id="pkOL5UraecKfocrNlie9Q3">打开 <code data-page-node-id="dFYEAz9cGFcybdujSoBUDA">D:\健身打卡</code> 文件夹</li>
+    <li data-page-node-id="PGLqLLtHiLrKGyDKsfRbRJ">进仓库页面 → <b data-page-node-id="BsZNjHKYxpeqPlAdXApbAH">Add file</b> → <b data-page-node-id="DJOoUJQ4XlHX2nvazhanHR">Upload files</b></li>
+    <li data-page-node-id="GjwgkmtZi4TlyUrI7MdIIB"><b data-page-node-id="XbEDiAI2mHaqLBvIFZ7Va6">把文件夹里所有东西全选拖进去</b>：<code data-page-node-id="w0DoxZZgEclIUkTaEP74H3">index.html</code>、<code data-page-node-id="MbBN5E1rQOBHK1vfqWEHLw">css</code>、<code data-page-node-id="L5FEe4bYYn199tI1xxYGSk">js</code>、<code data-page-node-id="pFhK5vS3ZFduQP9bbfIFlx">icons</code>、<code data-page-node-id="UwBGmnbUtQ2jPTih51KwZj">manifest.json</code>、<code data-page-node-id="qN1Zh5zEQbq3d2wpsCw8Yk">sw.js</code></li>
+  </ol>
+  <div class="box warn" data-page-node-id="Jh5dLj1qumCcze9SL8ycqO">
+    <p data-page-node-id="cehoctLKRZF2IXP6eTAz1k">⚠️ 拖的是<b data-page-node-id="VzNl9vYIrQdV7qYyCSWwoD">文件夹里面</b>的内容，不要把「健身打卡」这个文件夹整个拖进去，否则网址会多一层路径打不开。<br data-page-node-id="HSlvRgfoPqSbBX8EJcQXBU">
+    ⚠️ 一定要包含 <code data-page-node-id="cnx4u8e1QGqrKZ9lbSqA0H">js</code> 整个文件夹（里面现在有 sync.js，漏了就没有云同步）。</p>
+  </div>
+  <p data-page-node-id="2DACtJXsxs6LAFFeANeOy9">拖完 → 点绿色 <b data-page-node-id="9s0rlGbcHqnZMS4KetJALz">Commit changes</b>。</p>
+
+  <h3 data-page-node-id="vJd3DRMvCGDtVPxHzGbiqm">④ 开启 Pages</h3>
+  <div class="fake-ui" data-page-node-id="pEnMY2QEidLbbiHEB9Y8X2">
+    <div class="row" data-page-node-id="xw9b0KcSIR3csjaSlmGiY6"><span data-page-node-id="bZQ8bDUQq1QSmALYQwIKgN">仓库顶部 <b data-page-node-id="0qp5Y6kwvlU4gkGDJGiGCS">Settings</b> → 左侧 <b data-page-node-id="dxXGMBfprKrdDsWMm4fWgb">Pages</b></span></div>
+    <div class="row" data-page-node-id="Mf224BfAvsNSqw8qH4Zn5h"><span data-page-node-id="UUPY7DZImuBy6QrkNQYTdI">Branch 选</span><span data-page-node-id="YGtcjU02QDDtAK5E61H5NR"><b data-page-node-id="Un8jytNmtVJ3IaLIIQ2Ces">main</b> ＋ <b data-page-node-id="RTrEKBppBAu9CenIUXY7vf">/(root)</b></span></div>
+    <div class="row" data-page-node-id="Z8mLBzb924uTLM1Dg1Q0W2"><span data-page-node-id="GOI5LUga0l25R5yxdnXQQJ">点</span><span class="btn-fake" data-page-node-id="L5G85ymi54bJaCZF6VUuub">Save</span></div>
+  </div>
+  <p data-page-node-id="OZhjGQrQBo7Aht477I5sKS">等 <b data-page-node-id="35zZV1HW5HpAzGlZE4DohU">1~2 分钟</b>（喝口水），刷新页面，顶部会出现一行绿字：</p>
+  <p style="text-align:center" data-page-node-id="J7CaCfQCXhLE0Qft69cpHJ"><code data-page-node-id="A8Lr1FmYDn26Bv9BxAtduW">Your site is live at https://你的用户名.github.io/fitness/</code></p>
+  <p data-page-node-id="PYQgSqs9bH2OhR3XHndG16">点开能看到打卡页面，第 1 步就成了 ✅</p>
+
+  <h3 data-page-node-id="1JmZC8puL0FagFSyQi7vlB">⑤ 把网址记下来</h3>
+  <p data-page-node-id="FaaM3s8VsotqqBzHWQ3ZWX">填一下用户名，自动生成你的网址，手机上可以直接点开：</p>
+  <input class="txt" id="gh-user" placeholder="填 GitHub 用户名，比如 qiandajie" autocomplete="off" autocapitalize="off" spellcheck="false" data-page-node-id="jY7Cr7cjEdZ6fL6SZQ3vfJ">
+  <a class="link-out" id="my-link" style="display:none" target="_blank" rel="noopener" data-page-node-id="dCV6lwwQlkGtQMXvm0TGEM">📲 用手机打开我的打卡应用</a>
+</section>
+
+<!-- ============ 第 2 步 ============ -->
+<section class="card" id="s2" data-page-node-id="ZXiaG9GF2mKkfPiVOt9xqz">
+  <div class="step-head" data-page-node-id="HvzDwvY7CJnCCLuvvujnp4">
+    <span class="step-no" data-page-node-id="vcHFgvBjvhxF21fZEl7xfd">2</span>
+    <h2 data-page-node-id="mBfFhUBuAGHwFhG8Nfn5DZ">装到 iPhone 主屏幕</h2>
+    <label class="done-lbl" data-page-node-id="Wwcu8yAuXj0TTLYIDMcLRr"><input type="checkbox" data-step="s2" data-page-node-id="DZBphplrCdkWV8kEH6GZFR">完成</label>
+  </div>
+  <p class="sub" data-page-node-id="4vhS9BQYygQdwQMpn2gImK">1 分钟。做完手机桌面上就有个 App 图标了。</p>
+
+  <div class="fake-ui" data-page-node-id="3Hm1OaHtLrCMbkWBGJVb6r">
+    <div class="row" data-page-node-id="OsOzQKjEtphT1tUyYV5ncr"><span data-page-node-id="v05tRR7UcP5uHFiIyOonPX">用 iPhone 自带的 <b data-page-node-id="2biYhQWHFnFTOK6WIK9bHX">Safari</b> 打开上面的网址</span></div>
+    <div class="row" data-page-node-id="VG7ILTbKohydGNDS2RYXI3"><span data-page-node-id="tdtTGNDBECyT1grRgaa8LV">点底部中间的 <b data-page-node-id="SW88ELB9IXE8oHJl5UXOAi">分享按钮</b>（方框 ↑）</span></div>
+    <div class="row" data-page-node-id="6XY6pbVjoOnm02zBpuHLHO"><span data-page-node-id="t4k9MBQLuEUrroD6r1BNYq">往下滑，找到 <b data-page-node-id="fyBhVlBWuqlCv04qVHYiNP">添加到主屏幕</b></span></div>
+    <div class="row" data-page-node-id="FLM6pFQQ0fblvmbaHk91r3"><span data-page-node-id="SiBjeiR9D7di7cwaQQPvc7">右上角 <b data-page-node-id="pBvYZ7Qh0qPiiFvutguqUY">添加</b></span></div>
+  </div>
+
+  <div class="box danger" data-page-node-id="MjtWaEM2Ijx8HPJ7FS9f5F">
+    <p data-page-node-id="r0nZlxYGmYp8cF6Jbu1VZU"><b data-page-node-id="AvJVdQYU2UhszHALAxWbSb">⚠️ 最重要的一条：</b>以后<b data-page-node-id="Thg38VHR6pGGbfHuCddWc6">永远从桌面这个图标打开</b>，不要在 Safari 里输网址打开。</p>
+    <p data-page-node-id="nWfEnDOSYJ6hbxF3afTXnl">iPhone 上「Safari 里打开的网页」和「主屏幕 App」是<b data-page-node-id="F3odjmpHpvuUR8eCIjuJI6">两个独立的存储空间</b>——在 Safari 里打完卡，从图标进去可能看不到，反之也一样。认准一个入口，就不会乱。</p>
+  </div>
+
+  <div class="box" data-page-node-id="bkvDCaFdtEk32jnbiqBVjw">
+    <p data-page-node-id="aOWhdtlD9PNxXSuJjxvvOA"><b data-page-node-id="4NvPXhNWzJm8PrclSHoqGp">如果之前在电脑上打过卡</b>，现在把数据搬过来：电脑上「统计」页 →【导出数据备份】→ 把 json 文件发到手机（微信/邮件都行）→ 手机主屏 App 里「统计」页 →【导入数据备份】。没有历史数据就跳过这步。</p>
+  </div>
+</section>
+
+<!-- ============ 第 3 步 ============ -->
+<section class="card" id="s3" data-page-node-id="XxyiaHbJqiPAuSYejsTwtF">
+  <div class="step-head" data-page-node-id="cxOIawnqFFlmzm2KbGDY1h">
+    <span class="step-no" data-page-node-id="23Y9b20LqeWSHBte4dNhQy">3</span>
+    <h2 data-page-node-id="1BBSHdJqf8GEbHjyM29LbD">开启云同步（数据不丢的关键）</h2>
+    <label class="done-lbl" data-page-node-id="9h0zUB29afdJU8Q6kGyrug"><input type="checkbox" data-step="s3" data-page-node-id="xHJNDGsQRtlp8OgP4xFSXv">完成</label>
+  </div>
+  <p class="sub" data-page-node-id="nNcwGfvRRgO9goOG7S1oY9">约 5 分钟，只需要弄一次。做完之后每次打卡自动备份，你什么都不用管。</p>
+
+  <h3 data-page-node-id="wycwuVmeEwzzGmZxOMJfZj">① 拿一把「钥匙」</h3>
+  <p data-page-node-id="7GA38AShjRwnRrHSKMobNT">这把钥匙的作用：让手机上的应用能往你自己的 GitHub 账号里存一份私密备份。</p>
+
+  <div class="fake-ui" data-page-node-id="KsCldRE2APNabHRDOd0FKe">
+    <div class="row" data-page-node-id="bBJ0DYMalDAfUSSfKGEKGD"><span data-page-node-id="Q5toy1CEgeW6zp3CZaSNE0">1. 打开 <code data-page-node-id="sGS0cKGHg8XRcrJvSJV1Sn">github.com/settings/tokens</code> 并登录</span></div>
+    <div class="row" data-page-node-id="fW9vOb6IJzTMEGlUxqKXsB"><span data-page-node-id="F0GzutPEZ2LXiaGXfrrdwV">2. 右上角头像 → <b data-page-node-id="ndv3hXZx6GJINEdtvx3CxU">Settings</b> → 左侧最下 <b data-page-node-id="8UaCPOwInPWS7csgAptIFc">Developer settings</b></span></div>
+    <div class="row" data-page-node-id="9beLLyssYz1NenqUEQKFGv"><span data-page-node-id="a9TV8EtclFMnbdLxCFkg2A">3. <b data-page-node-id="9nXbnAZklCqAeUoolFW0xG">Personal access tokens</b> → <b data-page-node-id="ZDVQBIMGGGTTVfPzATHEYG">Tokens (classic)</b></span></div>
+    <div class="row" data-page-node-id="eNCqkE32qfyJUX0AhhKCst"><span data-page-node-id="zg0iZHvEIA0OPZPrwZ3auy">4. <b data-page-node-id="A65LvYD0FbsmIn0oxmZfXU">Generate new token (classic)</b></span></div>
+    <div class="row" data-page-node-id="i3BD7NegXqVnqYlqfJP23a"><span data-page-node-id="CBaPyq5h1z6PXD8LJKtXvp">5. Note 填</span><code data-page-node-id="lrvMvtomJaI0OnIRWrnBhH">健身打卡</code></div>
+    <div class="row" data-page-node-id="mlnSQ339SHFsH59RA3oor9"><span data-page-node-id="5y37oC4xQhhC4DEvlnZbUb">6. Expiration 选</span><span data-page-node-id="QKf3MFEeRHYzDcbxjDeHQG"><b data-page-node-id="StRoGGosMEPRPGkolKgy9w">No expiration</b>（永不过期）</span></div>
+    <div class="row" data-page-node-id="jpaaiT3ANXuI1J42K7NaVe"><span data-page-node-id="uOhIRbzEORCKiXDmV2wVDZ">7. 勾选权限</span><span data-page-node-id="5fkCb3NrhHT0a77DWatMRj"><b data-page-node-id="nGZJs1KFEzDbBgYi8gaiCB">gist</b>（只勾这一个）</span></div>
+    <div class="row" data-page-node-id="cJagWNMiGQAatGuZF0Bb3n"><span data-page-node-id="GcI0vskpaHo6OHAXSoOm9a">8. 拉到最下面点</span><span class="btn-fake" data-page-node-id="1GBC4EKnuGLXOJv1fgXQ27">Generate token</span></div>
+    <div class="row" data-page-node-id="37IT6zvMhYgK5BDWvS5mA3"><span data-page-node-id="WEWftIqbBAHZPyfdUd8wGY">9. <b data-page-node-id="AkwpPdGz4bgAyyXrwzzujh">立刻复制</b>那串 <code data-page-node-id="YZCuqt901dDqz1cOz8MM2P">ghp_</code> 开头的字符</span></div>
+  </div>
+
+  <div class="box warn" data-page-node-id="SVgEPkoQ224PNWTCjwfwiT">
+    <p data-page-node-id="CfzhSs8CjWrmlGFzyWPUEo">⚠️ 这串字符<b data-page-node-id="mHvZGlIA1YrElYh5Z2TQOD">只显示这一次</b>，关掉页面就再也看不到了。复制后先粘贴到微信「文件传输助手」或备忘录里存着，第 5 步还要用。</p>
+  </div>
+
+  <h3 data-page-node-id="O0pVAX1YXoPFcly4zDg2Jl">② 把钥匙填进 App</h3>
+  <ol data-page-node-id="3Zjm2Hv8sFlsAED5smCFZS">
+    <li data-page-node-id="DGnapdjRsBMhXOeCRU7EC5">打开主屏幕上的<b data-page-node-id="tAekST0tU0SuVlxo2QtjcN">健身打卡</b></li>
+    <li data-page-node-id="FvWyKIRZb5nwwFzPNRRRo6">底部【统计】→ 找到「☁️ 云同步」卡片 → 点【🚀 开启云同步】</li>
+    <li data-page-node-id="3A9FMtj0tvCMyLt4AwSum6">粘贴那串 <code data-page-node-id="0jo92WRhKxFR5BlDGGYuUP">ghp_...</code> → 点【保存并开启】</li>
+    <li data-page-node-id="bI8Td3ClhBq7V9pRPROOiQ">看到「云同步已开启 🎉」就成了</li>
+  </ol>
+
+  <h3 data-page-node-id="VY0s390MfuivuBRKoSGylv">③ 验证一下</h3>
+  <p data-page-node-id="n4qV4IvhnL4Bf2ZuXZyZgV">在同一个卡片点【🔄 立即同步】，状态栏会变成：</p>
+  <p style="text-align:center" data-page-node-id="B92HvQUvOj4E2h1zwz0aT9"><code data-page-node-id="3kQtpUQw4sf1fyyvWBETj7">🟢 已备份 刚刚</code></p>
+  <p data-page-node-id="HMLC9vZ5ZEqCVv3bPppjAI">看到这个，说明备份真的成功了 ✅</p>
+</section>
+
+<!-- ============ 第 4 步 ============ -->
+<section class="card" id="s4" data-page-node-id="NaG153uZCO0nZIOYzQIbS0">
+  <div class="step-head" data-page-node-id="4sV79FUxET14T6yAEt2ELf">
+    <span class="step-no" data-page-node-id="I8qhFUYsw8OQSoA6GuCLgn">4</span>
+    <h2 data-page-node-id="cgVCThXLeMUh2lamE0qoEr">验收：确认真的不会丢</h2>
+    <label class="done-lbl" data-page-node-id="TRoJaFFfSQVkRDbFC6w91K"><input type="checkbox" data-step="s4" data-page-node-id="1aDgGMMCYiYmbYImGC9MJ3">完成</label>
+  </div>
+  <p class="sub" data-page-node-id="wAFdJ2OsDDehObJKvXp8NM">花 1 分钟做个测试，以后就放心了。</p>
+
+  <ol data-page-node-id="G2K2fR9YQ3R8HTBKnlmwJD">
+    <li data-page-node-id="GT3zsZelyBfmklnF6p5mKW"><b data-page-node-id="gvduQfd4DwRNQDzJF3B9cd">打个卡</b>：随便记一个动作保存</li>
+    <li data-page-node-id="Sw9tvazp5oqx77x0R28AbY">回到【统计】页，等 <b data-page-node-id="lFIB6Mzw3l2kX2OQYBSQib">10 秒</b>，看云同步状态是不是变成「🟢 已备份 刚刚」</li>
+    <li data-page-node-id="kFKSDRTI5HBnomhDieSVkw"><b data-page-node-id="SWcjxVP64HR2Te4RIvKZHj">模拟数据丢失</b>：在设置里把 Safari 的网站数据清掉（或者更简单——不去管它，改天再看）</li>
+    <li data-page-node-id="qsLeUz7EbmP0PAB8dcSdmI">重新打开 App，如果记录空了，点【⬇️ 从云端恢复】，记录应该完整回来</li>
+  </ol>
+
+  <div class="box" data-page-node-id="PaviPpwmsiWBCAb9L8b7Pr">
+    <p data-page-node-id="O0iqBvB8Qn9KVhVGTDwjPA"><b data-page-node-id="E1Ub9VkWf4ta27DR9PcjyE">更真实的验证：</b>第二天打开 App，看昨天的数据还在不在；同步状态是不是显示「已备份 X 小时前」。是的话就说明一切正常，可以放心用了。</p>
+  </div>
+</section>
+
+<!-- ============ 第 5 步 ============ -->
+<section class="card" id="s5" data-page-node-id="AGzPpB6YBRMHXSZ9G0hPRI">
+  <div class="step-head" data-page-node-id="qOQWg606NGFq1f3d7pJTof">
+    <span class="step-no" data-page-node-id="6XBJveLD35sahuC77GdBCV">5</span>
+    <h2 data-page-node-id="s3Hcv1keBW5W1eCdpJARxH">日常使用 & 换手机怎么办</h2>
+    <label class="done-lbl" data-page-node-id="HDpOe29qT9GmxCeUFqvyyx"><input type="checkbox" data-step="s5" data-page-node-id="RuzoAxQBhLd9BwRmO4kpf6">完成</label>
+  </div>
+  <p class="sub" data-page-node-id="S2lADcNYTGtVgHu2fCrkwj">这几条知道就行，不用背。</p>
+
+  <h3 data-page-node-id="HBhgd3nrtzMtJqPAhO9GBk">平时怎么用</h3>
+  <p data-page-node-id="5mRPTJGhqb6zgDCGZU5FuH">就正常打卡。<b data-page-node-id="xCrVB7eHZVBhrceFw6aTDY">每次打卡后大约 5 秒自动备份一次</b>，不用点任何按钮。断网也没关系——数据先存在手机里，联网了自动补传。</p>
+
+  <h3 data-page-node-id="MwvZl5uXpQaOyDRVRN9q85">换手机 / 手机丢了</h3>
+  <ol data-page-node-id="CK1ldRYiOiYdWlxAAfiu1A">
+    <li data-page-node-id="LtjBk1sGOHOcrUk7GNrIxE">新手机用 Safari 打开同一个网址 → 添加到主屏幕</li>
+    <li data-page-node-id="VgmUPnXc7Bfc4wzQ6rOQ7N">打开 App →【统计】→【🚀 开启云同步】→ 粘贴同一个密钥</li>
+    <li data-page-node-id="52mSJaGwwACDUareGc8sFB">它会自动发现云端有数据，问你要不要恢复 → 点恢复，全部回来 ✅</li>
+  </ol>
+  <div class="box" data-page-node-id="9tUn7JzT3rdMVFGYqHvk8h"><p data-page-node-id="0JGkuuYRgeL4efRF8vg1oV">所以那串 <code data-page-node-id="kiDmf3wRbAZii6qneFJhId">ghp_</code> 密钥要保存好（存备忘录或微信收藏），它就是你的数据钥匙。</p></div>
+
+  <h3 data-page-node-id="ByZNqPJC69C03SpXRjQbNh">每月做一次（可选，兜底）</h3>
+  <p data-page-node-id="Mo5L3Fe2XDzXPnKb1Vfwmd">【统计】→【⬇️ 导出数据备份】→ 存到微信收藏。这样即使 GitHub 账号出问题，你还有一份本地文件。</p>
+
+  <h3 data-page-node-id="m8p43UhJPukecV6mPGWAmE">以后改了代码怎么更新</h3>
+  <p data-page-node-id="7LYnMYQOiNKmODqKNMHnRb">重新上传文件到 GitHub（同第 1 步 ③），手机上的 App <b data-page-node-id="TKrCB7CotGj4EGpZC0YFA2">下次打开会自动更新</b>。没变就关掉重开一次。</p>
+</section>
+
+<!-- ============ 常见问题 ============ -->
+<section class="card" data-page-node-id="dXGuFHlSAG3i8ZqWnXXVsM">
+  <div class="step-head" data-page-node-id="W5ERPGa5J0IT69c4xxKvI6">
+    <span class="step-no" data-page-node-id="sJFIcivix5szlTCX9uLBSF">❓</span>
+    <h2 data-page-node-id="yRHJH0PZ1hVql52XcgeWGe">出问题了先看这里</h2>
+  </div>
+
+  <table data-page-node-id="yLH6IPMg0tN3wjH71NMmpe">
+    <tr data-page-node-id="YZc7qosl7vkK5UlgKW6F42"><th style="width:38%" data-page-node-id="I8FtFMSEQvOR6OL5qcThlu">现象</th><th data-page-node-id="yuhASuyEusE1Gx8ovAoCgP">怎么解决</th></tr>
+    <tr data-page-node-id="zyN1W7bE09UHW4PGwhTxmb"><td data-page-node-id="9gPdSHdP6Jdctgx4uiBMyU">显示 🔴 备份失败 / 401</td><td data-page-node-id="IiFnuV5qXPQGZxpOYBt8Cu">密钥填错了或过期。重新生成一把（第 3 步 ①），在 App 里【⚙️ 修改密钥】换掉。注意别复制到多余空格。</td></tr>
+    <tr data-page-node-id="qAqEiXY2Fa9o73KnaKfuD7"><td data-page-node-id="GdxLPW4yMFBiIXdozoztKY">一直显示 🟡 同步中</td><td data-page-node-id="3cwrYBDnG2mKYxBErYPOti">网络连不上 GitHub。数据已经在手机里了，不会丢，联网后会自动重试。不用管。</td></tr>
+    <tr data-page-node-id="5r0CBGEfKrBp7zUVV4e8xm"><td data-page-node-id="lN8Yz94YXO6loUIxWVzID9">记录突然不见了</td><td data-page-node-id="FFV6aobATqCH5c7YVfHLLP"><b data-page-node-id="ZIxGczIvJOVKFfFlouYjLk">先别打卡</b>！直接去【统计】→【⬇️ 从云端恢复】，一键全部拉回来。</td></tr>
+    <tr data-page-node-id="FFuxCA4nSN5mjOaHzEFh7y"><td data-page-node-id="xRCfjMDKiElKHzUJvtDel0">在 Safari 打开看不到数据</td><td data-page-node-id="srzNQzcqnhe2rMssn1jCUd">正常——必须从桌面图标进。两个是独立的存储空间。</td></tr>
+    <tr data-page-node-id="1BKXoGgoDLX5Hj0Cxuf0yV"><td data-page-node-id="Spgq6B2gRbBXBmkYkrlx24">桌面图标打开白屏</td><td data-page-node-id="aIZCCZCCI7anvVqKJPzSPw">长按删除图标 → 重新用 Safari 打开网址 → 再添加到主屏幕。</td></tr>
+    <tr data-page-node-id="chwjVbNZb7CpfS3ImX4wRN"><td data-page-node-id="FDmBJRX3NNRiGrwY5g5t01">网址打不开 / 很慢</td><td data-page-node-id="KFb4sCh7WzwzPV2K6IbMvz">GitHub 是国外服务，偶尔慢。首次装好之后走本地缓存，打开很快，不影响日常用。实在慢可以考虑换成国内托管（腾讯云开发 / Cloudflare Pages）。</td></tr>
+    <tr data-page-node-id="tuajOdNhdkbcGlTt1sMeNE"><td data-page-node-id="2t9ZZ9RTHzvXESs7IHqmCn">想换回手动备份</td><td data-page-node-id="FJZk6VNBdJJDP7bVbDv0lR">【统计】→ 云同步卡片最下面【关闭云同步】。数据仍在手机里。</td></tr>
+  </table>
+
+  <div class="box danger" data-page-node-id="bAgwoZBqlX2bleIAzxjUWS">
+    <p data-page-node-id="7EB0Ht2pZr9fCMc8h6RZnp"><b data-page-node-id="V4KPv6EYiXpX5BOOBeOA71">唯一还会丢数据的情况：</b>云同步没开 + 从没导出过 + 清了浏览器缓存。所以——<b data-page-node-id="2D5zW6xyxaEGZta2871DmG">第 3 步一定要做完</b>。</p>
+  </div>
+</section>
+
+<div class="foot" data-page-node-id="skmfTVWGrQfhT57iNm9PXh">
+  这份指南保存在 <code data-page-node-id="ZVcfHn4GcFVmdpGUWSITE5">D:\健身打卡\手机使用与数据不丢失指南.html</code><br data-page-node-id="QBiRfy0FeYFHaBCR39s0Ti">
+  双击就能打开，打勾进度会自动记住 · 手机上也能看
+</div>
+
+</div>
+
+<script>
+(function () {
+  var KEY = 'fitness-guide-progress';
+  var boxes = document.querySelectorAll('input[data-step]');
+  var st = {};
+  try { st = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { st = {}; }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
+  function upd() {
+    var n = 0;
+    boxes.forEach(function (b) {
+      if (b.checked) n++;
+      b.closest('.card').classList.toggle('is-done', b.checked);
+    });
+    document.getElementById('bar').style.width = (n / boxes.length * 100) + '%';
+    document.getElementById('ptxt').textContent = n + '/' + boxes.length + ' 步';
+  }
+  boxes.forEach(function (b) {
+    b.checked = !!st[b.dataset.step];
+    b.addEventListener('change', function () { st[b.dataset.step] = b.checked; save(); upd(); });
+  });
+  upd();
+
+  // 网址生成器
+  var u = document.getElementById('gh-user');
+  var link = document.getElementById('my-link');
+  function build() {
+    var v = (u.value || '').trim().replace(/^@/, '');
+    st.user = v; save();
+    if (v) {
+      var url = 'https://' + v.toLowerCase() + '.github.io/fitness/';
+      link.href = url; link.textContent = '📲 打开我的打卡应用（' + url + '）';
+      link.style.display = '';
+    } else {
+      link.style.display = 'none';
+    }
+  }
+  u.addEventListener('input', build);
+  if (st.user) { u.value = st.user; build(); }
+})();
+</script>
+</body>
+</html>
