@@ -1,5 +1,5 @@
 /* Service Worker：网络优先（在线自动更新，离线用缓存兜底） */
-const CACHE = 'fitness-v6';
+const CACHE = 'fitness-v7';
 const ASSETS = [
   './',
   './index.html',

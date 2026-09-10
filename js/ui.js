@@ -309,8 +309,8 @@ let libState = { cat: 'all', q: '' };
 
 function libChipsHtml(cat) {
   const cur = cat || libState.cat;
-  return `<button class="chip${cur === 'all' ? ' active' : ''}" data-cat="all">全部</button>` +
-    allCategories().map(c => `<button class="chip${cur === c.id ? ' active' : ''}" data-cat="${c.id}">${c.name}</button>`).join('') +
+  return `<button class="chip${cur === 'all' ? ' active' : ''}" data-cat="all">✨ 全部</button>` +
+    allCategories().map(c => `<button class="chip${cur === c.id ? ' active' : ''}" data-cat="${c.id}">${c.emoji || '🏷️'} ${esc(c.name)}</button>`).join('') +
     `<button class="chip chip-add" data-action="manage-cats">＋ 分类</button>`;
 }
 
@@ -329,52 +329,111 @@ function renderLibraryList() {
   document.getElementById('lib-list').innerHTML = list.length
     ? `<div class="ex-grid">${list.map(e => `
         <button class="ex-card" data-action="open-ex" data-id="${e.id}">
-          ${e.img ? `<img class="ex-thumb" src="${e.img}" alt="">` : `<span class="ex-emoji">${e.emoji}</span>`}
+          ${e.img ? `<img class="ex-thumb" src="${e.img}" alt="">` : ''}
           <span class="ex-name">${esc(e.name)}</span>
           <span class="ex-cat">${esc(catName(e.category))}</span>
         </button>`).join('')}</div>`
     : `<div class="empty"><span class="big">🔍</span>没有找到动作</div>`;
 }
 
-// ---------- 分类管理（新增/删除自定义分类） ----------
-function openCatManager() {
-  const customs = Store.cats;
+// ---------- 分类管理（新增 / 修改 / 删除） ----------
+const CAT_EMOJIS = ['✨','💪','🏋️','🦵','🦾','🎯','🏃','🙆','🌉','🦿','🔥','🧘','🤸','🏊','🚴','🧗','⚽','🏀','🥊','🫁','❤️','🩺','♻️','🌸','🌅','🌙','⚡','⭐','🏷️','📁'];
+
+function catEmojiChips(current) {
+  return `<div class="chips">${CAT_EMOJIS.map(em =>
+    `<button type="button" class="chip cat-emoji-opt${em === current ? ' active' : ''}" data-emoji="${em}" style="font-size:16px">${em}</button>`
+  ).join('')}</div>`;
+}
+
+function openCatManager(editId) {
+  if (editId) return openCatEditor(editId);
+  const cats = allCategories();
   openOverlay({
     type: 'sheet',
     title: '分类管理',
     content: `
       <label class="form-label">新增分类</label>
       <input class="input" id="new-cat-name" placeholder="比如：臀部、拉伸、热身…" maxlength="6">
-      <p class="backup-note" style="margin-top:8px">最多 6 个字，不能和现有分类重名。</p>
-      <label class="form-label">我的自定义分类（点 ✕ 删除）</label>
-      <div id="cat-custom-list">${
-        customs.length
-          ? customs.map(c => `
-            <div class="cat-row">
-              <span>${esc(c.name)}</span>
-              <button class="icon-btn" data-del-cat="${c.id}" aria-label="删除">✕</button>
-            </div>`).join('')
-          : '<p class="backup-note">还没有自定义分类，在上面输入名称添加一个吧。</p>'
+      <label class="form-label">图标</label>
+      ${catEmojiChips('✨')}
+      <button class="btn btn-primary btn-block" id="cat-add" style="margin-top:2px">＋ 添加这个分类</button>
+      <label class="form-label" style="margin-top:20px">全部分类（点 ✏️ 改名 / 换图标）</label>
+      <div id="cat-list">${
+        cats.map(c => `
+        <div class="cat-row">
+          <span class="cat-emoji">${c.emoji || '🏷️'} ${esc(c.name)}</span>
+          <span style="display:flex; gap:2px">
+            <button class="icon-btn" data-edit-cat="${c.id}" aria-label="编辑">✏️</button>
+            ${c.custom ? `<button class="icon-btn" data-del-cat="${c.id}" aria-label="删除">✕</button>` : ''}
+          </span>
+        </div>`).join('')
       }</div>
+      <p class="backup-note">内置分类也能改名换图标；只有自己添加的分类可以删除。删除后动作保留，显示为「未分类」。</p>
     `,
-    footer: `<button class="btn btn-primary btn-block" data-ok>＋ 添加这个分类</button>`,
     onMount(ov) {
-      ov.querySelector('[data-ok]').addEventListener('click', () => {
+      let emoji = '✨';
+      const emojiBox = ov.querySelector('.chips');
+      emojiBox.addEventListener('click', e2 => {
+        const b = e2.target.closest('.cat-emoji-opt');
+        if (!b) return;
+        emoji = b.dataset.emoji;
+        emojiBox.querySelectorAll('.cat-emoji-opt').forEach(x => x.classList.toggle('active', x === b));
+      });
+      ov.querySelector('#cat-add').addEventListener('click', () => {
         const input = ov.querySelector('#new-cat-name');
         const name = input.value.trim();
         if (!name) { toast('请先填写分类名称'); return; }
-        const c = Store.addCat(name);
-        if (!c) { toast('这个分类已存在，换一个名字吧'); return; }
+        if (allCategories().some(c => c.name === name)) { toast('这个分类已存在，换一个名字吧'); return; }
+        Store.addCat(name, emoji);
         renderLibrary();
         toast('已添加「' + name + '」');
-        openCatManager(); // 刷新弹窗内容
+        openCatManager();
       });
-      ov.querySelector('#cat-custom-list').addEventListener('click', e2 => {
+      ov.querySelector('#cat-list').addEventListener('click', e2 => {
         const d = e2.target.closest('[data-del-cat]');
-        if (!d) return;
-        Store.removeCat(d.dataset.delCat);
+        const ed = e2.target.closest('[data-edit-cat]');
+        if (d) {
+          Store.removeCat(d.dataset.delCat);
+          renderLibrary();
+          toast('已删除分类（动作还在，显示为未分类）');
+          openCatManager();
+        } else if (ed) {
+          openCatEditor(ed.dataset.editCat);
+        }
+      });
+    },
+  });
+}
+
+function openCatEditor(id) {
+  const c = allCategories().find(x => x.id === id);
+  if (!c) return;
+  let emoji = c.emoji || '🏷️';
+  openOverlay({
+    type: 'sheet',
+    title: '编辑分类',
+    content: `
+      <button class="btn-danger-ghost" data-action="manage-cats" style="margin:0 0 4px; padding:4px 0">‹ 返回列表</button>
+      <label class="form-label">名称</label>
+      <input class="input" id="edit-cat-name" value="${esc(c.name)}" maxlength="6">
+      <label class="form-label">图标</label>
+      ${catEmojiChips(emoji)}
+    `,
+    footer: `<button class="btn btn-primary btn-block" data-ok>保存</button>`,
+    onMount(ov) {
+      ov.querySelector('.chips').addEventListener('click', e2 => {
+        const b = e2.target.closest('.cat-emoji-opt');
+        if (!b) return;
+        emoji = b.dataset.emoji;
+        ov.querySelectorAll('.cat-emoji-opt').forEach(x => x.classList.toggle('active', x === b));
+      });
+      ov.querySelector('[data-ok]').addEventListener('click', () => {
+        const name = ov.querySelector('#edit-cat-name').value.trim();
+        if (!name) { toast('请填写分类名称'); return; }
+        if (allCategories().some(x => x.name === name && x.id !== id)) { toast('这个分类已存在，换一个名字吧'); return; }
+        Store.updateCat(id, { name, emoji });
         renderLibrary();
-        toast('已删除分类（动作还在，显示为未分类）');
+        toast('已保存');
         openCatManager();
       });
     },
@@ -431,11 +490,7 @@ function openExerciseForm(ex) {
         <input id="exf-name" class="input" placeholder="例如：俯卧撑" value="${esc(ex ? ex.name : '')}">
         <label class="form-label">分类</label>
         <div class="chips" id="exf-cats">${allCategories().map(c =>
-          `<button class="chip${(ex ? ex.category : 'chest') === c.id ? ' active' : ''}" data-cat="${c.id}">${c.name}</button>`
-        ).join('')}</div>
-        <label class="form-label">图标</label>
-        <div class="emoji-grid" id="exf-emojis">${EMOJI_OPTIONS.map(em =>
-          `<button class="emoji-opt${(ex ? ex.emoji : '💪') === em ? ' active' : ''}" data-emoji="${em}">${em}</button>`
+          `<button class="chip${(ex ? ex.category : 'chest') === c.id ? ' active' : ''}" data-cat="${c.id}">${c.emoji || '🏷️'} ${esc(c.name)}</button>`
         ).join('')}</div>
         <label class="form-label">图片说明（可选）</label>
         <div class="img-pick">
@@ -457,7 +512,7 @@ function openExerciseForm(ex) {
       <button class="btn btn-primary" id="exf-save">保存</button>`,
     onMount(ov) {
       let cat = ex ? ex.category : 'chest';
-      let emoji = ex ? ex.emoji : '💪';
+      let emoji = ex ? ex.emoji : '💪';   // 旧动作保留原图标用于打卡记录；新动作默认 💪
       let img = ex ? (ex.img || '') : '';
       const fileInput = ov.querySelector('#exf-img');
       const thumb = ov.querySelector('#exf-thumb');
@@ -467,12 +522,6 @@ function openExerciseForm(ex) {
         if (!b) return;
         cat = b.dataset.cat;
         ov.querySelectorAll('#exf-cats .chip').forEach(c => c.classList.toggle('active', c === b));
-      });
-      ov.querySelector('#exf-emojis').addEventListener('click', e2 => {
-        const b = e2.target.closest('.emoji-opt');
-        if (!b) return;
-        emoji = b.dataset.emoji;
-        ov.querySelectorAll('#exf-emojis .emoji-opt').forEach(c => c.classList.toggle('active', c === b));
       });
       ov.querySelector('#exf-img-btn').addEventListener('click', () => fileInput.click());
       fileInput.addEventListener('change', async () => {

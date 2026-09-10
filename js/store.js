@@ -1,16 +1,16 @@
 /* 数据层：localStorage 读写、统计、导入导出 */
 
-// 动作分类（固定列表）
+// 动作分类（固定列表，emoji 用于分类标签展示）
 const CATEGORIES = [
-  { id: 'chest', name: '胸部' },
-  { id: 'back', name: '背部' },
-  { id: 'legs', name: '腿部' },
-  { id: 'shoulder', name: '肩部' },
-  { id: 'core', name: '核心' },
-  { id: 'cardio', name: '有氧' },
-  { id: 'neck', name: '肩颈康复' },
-  { id: 'waist', name: '腰背康复' },
-  { id: 'knee', name: '膝关节康复' },
+  { id: 'chest', name: '胸部', emoji: '💪' },
+  { id: 'back', name: '背部', emoji: '🏋️' },
+  { id: 'legs', name: '腿部', emoji: '🦵' },
+  { id: 'shoulder', name: '肩部', emoji: '🦾' },
+  { id: 'core', name: '核心', emoji: '🎯' },
+  { id: 'cardio', name: '有氧', emoji: '🏃' },
+  { id: 'neck', name: '肩颈康复', emoji: '🙆' },
+  { id: 'waist', name: '腰背康复', emoji: '🌉' },
+  { id: 'knee', name: '膝关节康复', emoji: '🦿' },
 ];
 
 function catName(id) {
@@ -18,9 +18,11 @@ function catName(id) {
   return c ? c.name : '未分类';
 }
 
-// 全部分类 = 固定分类 + 用户自定义分类
+// 全部分类 = 固定分类 + 用户自定义分类，并套用用户的改名/改图标
 function allCategories() {
-  return CATEGORIES.concat(Store ? Store.cats : []);
+  const ov = (Store && Store.catOverrides) || {};
+  return CATEGORIES.concat(Store ? Store.cats : [])
+    .map(c => ov[c.id] ? { ...c, ...ov[c.id] } : c);
 }
 
 // ---------- 日期工具（本地时区） ----------
@@ -160,14 +162,14 @@ const Store = {
   },
   set cats(v) { this._save('fitness.cats', v); },
 
-  addCat(name) {
+  addCat(name, emoji) {
     name = (name || '').trim();
     if (!name) return null;
     if (CATEGORIES.some(c => c.name === name) || this.cats.some(c => c.name === name)) {
       return null; // 与现有分类重名
     }
     const arr = this.cats;
-    const c = { id: 'c_' + uid(), name, custom: true };
+    const c = { id: 'c_' + uid(), name, emoji: emoji || '✨', custom: true };
     arr.push(c);
     this.cats = arr;
     return c;
@@ -176,6 +178,19 @@ const Store = {
   removeCat(id) {
     this.cats = this.cats.filter(c => c.id !== id);
     // 该分类下的动作保留，界面显示为「未分类」，历史记录不受影响
+  },
+
+  // 修改任意分类（内置/自定义通用）：名称与图标。内置分类的修改存为覆盖项
+  get catOverrides() {
+    const v = this._load('fitness.catOverrides');
+    return (v && typeof v === 'object' && !Array.isArray(v)) ? v : {};
+  },
+  set catOverrides(v) { this._save('fitness.catOverrides', v); },
+
+  updateCat(id, patch) {
+    const ov = this.catOverrides;
+    ov[id] = { ...(ov[id] || {}), ...patch };
+    this.catOverrides = ov;
   },
 
   // 某天的打卡记录（无记录返回 null）

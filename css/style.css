@@ -20,6 +20,8 @@
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
 html, body { height: 100%; overflow-x: hidden; }
+/* html 背景与导航栏同色：底部安全区（Home 条区域）不再露出灰色，视觉上导航栏延伸到屏幕底 */
+html { background: var(--card); }
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif;
@@ -47,7 +49,10 @@ body {
 .page.hidden { display: none; }
 
 .page-head h1 { font-size: 24px; font-weight: 800; }
-.page-sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+.page-head { margin: 6px 0 20px; }
+.page-sub { font-size: 13px; color: var(--muted); margin-top: 6px; }
+/* 动作库/资料页搜索框：与标题、下方列表拉开间距 */
+.lib-search { margin: 0 0 12px; }
 
 /* ---------- 底部导航 ---------- */
 /* 固定在视口底部，不随内容滚动；transform 不作用于 fixed 定位 */
@@ -476,11 +481,14 @@ textarea.input { resize: vertical; }
   background: var(--input-bg-2);
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 9px 12px;
+  padding: 6px 8px 6px 12px;
   margin-bottom: 8px;
   font-size: 14px;
 }
 .cat-row .icon-btn { color: var(--danger); }
+.cat-row .icon-btn[data-edit-cat] { color: var(--muted); }
+.cat-emoji { display: flex; align-items: center; gap: 4px; }
+.cat-emoji-opt { padding: 5px 10px; }
 
 /* ---------- 动作图片说明 ---------- */
 img { max-width: 100%; }
