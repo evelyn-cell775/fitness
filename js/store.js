@@ -14,8 +14,13 @@ const CATEGORIES = [
 ];
 
 function catName(id) {
-  const c = CATEGORIES.find(x => x.id === id);
+  const c = allCategories().find(x => x.id === id);
   return c ? c.name : '未分类';
+}
+
+// 全部分类 = 固定分类 + 用户自定义分类
+function allCategories() {
+  return CATEGORIES.concat(Store ? Store.cats : []);
 }
 
 // ---------- 日期工具（本地时区） ----------
@@ -146,6 +151,31 @@ const Store = {
 
   deleteMaterial(id) {
     this.materials = this.materials.filter(x => x.id !== id);
+  },
+
+  // ---------- 自定义分类 ----------
+  get cats() {
+    const v = this._load('fitness.cats');
+    return Array.isArray(v) ? v : [];
+  },
+  set cats(v) { this._save('fitness.cats', v); },
+
+  addCat(name) {
+    name = (name || '').trim();
+    if (!name) return null;
+    if (CATEGORIES.some(c => c.name === name) || this.cats.some(c => c.name === name)) {
+      return null; // 与现有分类重名
+    }
+    const arr = this.cats;
+    const c = { id: 'c_' + uid(), name, custom: true };
+    arr.push(c);
+    this.cats = arr;
+    return c;
+  },
+
+  removeCat(id) {
+    this.cats = this.cats.filter(c => c.id !== id);
+    // 该分类下的动作保留，界面显示为「未分类」，历史记录不受影响
   },
 
   // 某天的打卡记录（无记录返回 null）

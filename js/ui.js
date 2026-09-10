@@ -13,6 +13,33 @@ function esc(s) {
   }[c]));
 }
 
+// 图片压缩：手机拍照动辄几 MB，直接存 localStorage 会爆。压到最长边 1000px 的 JPEG
+function compressImage(file, maxSize = 1000, quality = 0.72) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.naturalWidth, h = img.naturalHeight;
+        const scale = Math.min(1, maxSize / Math.max(w, h));
+        w = Math.max(1, Math.round(w * scale));
+        h = Math.max(1, Math.round(h * scale));
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        let data = canvas.toDataURL('image/jpeg', quality);
+        if (data.length > 450000) data = canvas.toDataURL('image/jpeg', 0.5); // 仍过大就再压一档
+        if (data.length > 700000) { reject(new Error('too large')); return; }
+        resolve(data);
+      };
+      img.onerror = () => reject(new Error('decode failed'));
+      img.src = reader.result;
+    };
+    reader.onerror = () => reject(new Error('read failed'));
+    reader.readAsDataURL(file);
+  });
+}
+
 let toastTimer = null;
 function toast(msg) {
   const root = document.getElementById('toast-root');
@@ -283,7 +310,8 @@ let libState = { cat: 'all', q: '' };
 function libChipsHtml(cat) {
   const cur = cat || libState.cat;
   return `<button class="chip${cur === 'all' ? ' active' : ''}" data-cat="all">全部</button>` +
-    CATEGORIES.map(c => `<button class="chip${cur === c.id ? ' active' : ''}" data-cat="${c.id}">${c.name}</button>`).join('');
+    allCategories().map(c => `<button class="chip${cur === c.id ? ' active' : ''}" data-cat="${c.id}">${c.name}</button>`).join('') +
+    `<button class="chip chip-add" data-action="manage-cats">＋ 分类</button>`;
 }
 
 function renderLibrary() {
@@ -301,11 +329,56 @@ function renderLibraryList() {
   document.getElementById('lib-list').innerHTML = list.length
     ? `<div class="ex-grid">${list.map(e => `
         <button class="ex-card" data-action="open-ex" data-id="${e.id}">
-          <span class="ex-emoji">${e.emoji}</span>
+          ${e.img ? `<img class="ex-thumb" src="${e.img}" alt="">` : `<span class="ex-emoji">${e.emoji}</span>`}
           <span class="ex-name">${esc(e.name)}</span>
           <span class="ex-cat">${esc(catName(e.category))}</span>
         </button>`).join('')}</div>`
     : `<div class="empty"><span class="big">🔍</span>没有找到动作</div>`;
+}
+
+// ---------- 分类管理（新增/删除自定义分类） ----------
+function openCatManager() {
+  const customs = Store.cats;
+  openOverlay({
+    type: 'sheet',
+    title: '分类管理',
+    content: `
+      <label class="form-label">新增分类</label>
+      <input class="input" id="new-cat-name" placeholder="比如：臀部、拉伸、热身…" maxlength="6">
+      <p class="backup-note" style="margin-top:8px">最多 6 个字，不能和现有分类重名。</p>
+      <label class="form-label">我的自定义分类（点 ✕ 删除）</label>
+      <div id="cat-custom-list">${
+        customs.length
+          ? customs.map(c => `
+            <div class="cat-row">
+              <span>${esc(c.name)}</span>
+              <button class="icon-btn" data-del-cat="${c.id}" aria-label="删除">✕</button>
+            </div>`).join('')
+          : '<p class="backup-note">还没有自定义分类，在上面输入名称添加一个吧。</p>'
+      }</div>
+    `,
+    footer: `<button class="btn btn-primary btn-block" data-ok>＋ 添加这个分类</button>`,
+    onMount(ov) {
+      ov.querySelector('[data-ok]').addEventListener('click', () => {
+        const input = ov.querySelector('#new-cat-name');
+        const name = input.value.trim();
+        if (!name) { toast('请先填写分类名称'); return; }
+        const c = Store.addCat(name);
+        if (!c) { toast('这个分类已存在，换一个名字吧'); return; }
+        renderLibrary();
+        toast('已添加「' + name + '」');
+        openCatManager(); // 刷新弹窗内容
+      });
+      ov.querySelector('#cat-custom-list').addEventListener('click', e2 => {
+        const d = e2.target.closest('[data-del-cat]');
+        if (!d) return;
+        Store.removeCat(d.dataset.delCat);
+        renderLibrary();
+        toast('已删除分类（动作还在，显示为未分类）');
+        openCatManager();
+      });
+    },
+  });
 }
 
 function openExerciseDetail(id) {
@@ -318,6 +391,7 @@ function openExerciseDetail(id) {
       <div class="ex-detail">
         <div class="ex-detail-emoji">${e.emoji}</div>
         <div class="ex-detail-meta"><span class="tag">${esc(catName(e.category))}</span></div>
+        ${e.img ? `<img class="ex-detail-img" src="${e.img}" alt="${esc(e.name)} 图片说明">` : ''}
         ${e.desc ? `<p class="ex-detail-desc">${esc(e.desc)}</p>` : ''}
         <p class="ex-detail-created">创建于 ${e.createdAt ? e.createdAt.slice(0, 10) : '—'}</p>
       </div>`,
@@ -356,13 +430,25 @@ function openExerciseForm(ex) {
         <label class="form-label">动作名称 *</label>
         <input id="exf-name" class="input" placeholder="例如：俯卧撑" value="${esc(ex ? ex.name : '')}">
         <label class="form-label">分类</label>
-        <div class="chips" id="exf-cats">${CATEGORIES.map(c =>
+        <div class="chips" id="exf-cats">${allCategories().map(c =>
           `<button class="chip${(ex ? ex.category : 'chest') === c.id ? ' active' : ''}" data-cat="${c.id}">${c.name}</button>`
         ).join('')}</div>
         <label class="form-label">图标</label>
         <div class="emoji-grid" id="exf-emojis">${EMOJI_OPTIONS.map(em =>
           `<button class="emoji-opt${(ex ? ex.emoji : '💪') === em ? ' active' : ''}" data-emoji="${em}">${em}</button>`
         ).join('')}</div>
+        <label class="form-label">图片说明（可选）</label>
+        <div class="img-pick">
+          <img class="img-thumb" id="exf-thumb" src="${ex && ex.img ? ex.img : ''}" alt="" style="${ex && ex.img ? '' : 'display:none'}">
+          <div class="img-tip">
+            <div style="display:flex; gap:8px">
+              <button class="btn btn-sm" id="exf-img-btn" type="button">📷 选图</button>
+              <button class="btn btn-sm" id="exf-img-del" type="button" style="display:${ex && ex.img ? '' : 'none'}">移除</button>
+            </div>
+            <div style="margin-top:6px">动作示范图 / 要领图，保存时自动压缩不占空间</div>
+          </div>
+        </div>
+        <input type="file" id="exf-img" accept="image/*" hidden>
         <label class="form-label">描述（可选）</label>
         <textarea id="exf-desc" class="input" rows="3" placeholder="动作要领、注意事项…">${esc(ex ? ex.desc : '')}</textarea>
       </div>`,
@@ -372,6 +458,10 @@ function openExerciseForm(ex) {
     onMount(ov) {
       let cat = ex ? ex.category : 'chest';
       let emoji = ex ? ex.emoji : '💪';
+      let img = ex ? (ex.img || '') : '';
+      const fileInput = ov.querySelector('#exf-img');
+      const thumb = ov.querySelector('#exf-thumb');
+      const delBtn = ov.querySelector('#exf-img-del');
       ov.querySelector('#exf-cats').addEventListener('click', e2 => {
         const b = e2.target.closest('.chip');
         if (!b) return;
@@ -384,6 +474,28 @@ function openExerciseForm(ex) {
         emoji = b.dataset.emoji;
         ov.querySelectorAll('#exf-emojis .emoji-opt').forEach(c => c.classList.toggle('active', c === b));
       });
+      ov.querySelector('#exf-img-btn').addEventListener('click', () => fileInput.click());
+      fileInput.addEventListener('change', async () => {
+        const f = fileInput.files[0];
+        fileInput.value = '';
+        if (!f) return;
+        _toast('正在压缩图片…');
+        try {
+          img = await compressImage(f);
+          thumb.src = img;
+          thumb.style.display = '';
+          delBtn.style.display = '';
+          toast('图片已就绪 ✅');
+        } catch (err) {
+          toast('图片读取失败，换一张试试');
+        }
+      });
+      delBtn.addEventListener('click', () => {
+        img = '';
+        thumb.src = '';
+        thumb.style.display = 'none';
+        delBtn.style.display = 'none';
+      });
       ov.querySelector('#exf-save').addEventListener('click', () => {
         const name = ov.querySelector('#exf-name').value.trim();
         if (!name) { toast('请填写动作名称'); return; }
@@ -392,6 +504,7 @@ function openExerciseForm(ex) {
           name,
           category: cat,
           emoji,
+          img,
           desc: ov.querySelector('#exf-desc').value.trim(),
         });
         closeOverlay();

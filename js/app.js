@@ -34,6 +34,7 @@ document.addEventListener('click', e => {
     else if (act === 'edit-today') openCheckinForm(todayStr(), Store.getCheckin(todayStr()));
     else if (act === 'open-ex') openExerciseDetail(a.dataset.id);
     else if (act === 'add-ex') openExerciseForm(null);
+    else if (act === 'manage-cats') openCatManager();
     else if (act === 'open-mat') openMaterialDetail(a.dataset.id);
     else if (act === 'add-mat') openMaterialForm(null);
     else if (act === 'export') exportData();

@@ -19,7 +19,7 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-html, body { height: 100%; }
+html, body { height: 100%; overflow-x: hidden; }
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif;
@@ -39,13 +39,18 @@ body {
 }
 
 /* ---------- 页面骨架 ---------- */
-.page { padding: 20px 16px calc(80px + env(safe-area-inset-bottom)); }
+/* 顶部预留状态栏安全区：主屏 PWA 全屏模式下内容不再顶到时间/电量下面 */
+.page {
+  padding: calc(env(safe-area-inset-top) + 20px) 16px calc(80px + env(safe-area-inset-bottom));
+  max-width: 100%;
+}
 .page.hidden { display: none; }
 
 .page-head h1 { font-size: 24px; font-weight: 800; }
 .page-sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
 
 /* ---------- 底部导航 ---------- */
+/* 固定在视口底部，不随内容滚动；transform 不作用于 fixed 定位 */
 .tabbar {
   position: fixed;
   bottom: 0; left: 50%;
@@ -56,6 +61,7 @@ body {
   border-top: 1px solid var(--border);
   padding-bottom: env(safe-area-inset-bottom);
   z-index: 40;
+  will-change: transform;
 }
 .tab {
   flex: 1;
@@ -96,10 +102,13 @@ body {
 
 /* ---------- 日历 ---------- */
 .cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-weight: 700; font-size: 15px; }
-.cal-week, .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+/* minmax(0,1fr)：强制 7 列等分且不允许内容把列撑宽（手机上日历超出屏幕的根因防御） */
+.cal-week, .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
 .cal-week span { font-size: 12px; color: var(--muted); text-align: center; padding: 4px 0; }
 .cal-cell {
   aspect-ratio: 1;
+  min-width: 0;
+  padding: 0;
   border-radius: 50%;
   border: 0; background: none;
   font-size: 14px; color: var(--text);
@@ -126,8 +135,9 @@ body {
   padding: 10px 12px;
   margin-bottom: 8px;
 }
-.day-record-name { font-weight: 600; font-size: 14px; }
-.day-record-detail { font-size: 12px; color: var(--muted); margin-top: 2px; line-height: 1.5; }
+.day-record-name { font-weight: 600; font-size: 14px; overflow-wrap: anywhere; }
+.day-record-detail { font-size: 12px; color: var(--muted); margin-top: 2px; line-height: 1.5; overflow-wrap: anywhere; }
+.day-record-main { flex: 1; min-width: 0; }
 
 /* ---------- 按钮 ---------- */
 .btn {
@@ -178,7 +188,7 @@ textarea.input { resize: vertical; }
 .chip.active { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 600; }
 
 /* ---------- 动作卡片网格 ---------- */
-.ex-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.ex-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .ex-card {
   position: relative;
   background: var(--card);
@@ -376,7 +386,7 @@ textarea.input { resize: vertical; }
 
 /* ---------- 新增/编辑动作表单 ---------- */
 .form-label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin: 14px 0 6px; }
-.emoji-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+.emoji-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
 .emoji-opt {
   font-size: 24px;
   padding: 8px 0;
@@ -391,7 +401,7 @@ textarea.input { resize: vertical; }
 .confirm-msg { font-size: 14px; line-height: 1.7; color: var(--text); }
 
 /* ---------- 统计页 ---------- */
-.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.stats-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
 .stat-card { background: var(--card); border-radius: var(--radius); padding: 16px 8px; text-align: center; box-shadow: 0 1px 3px rgba(0, 0, 0, .04); }
 .stat-num { font-size: 28px; font-weight: 800; color: var(--primary-dark); }
 .stat-lbl { font-size: 12px; color: var(--muted); margin-top: 4px; }
@@ -442,7 +452,7 @@ textarea.input { resize: vertical; }
 .empty .big { font-size: 40px; display: block; margin-bottom: 8px; }
 
 /* ---------- Toast ---------- */
-#toast-root { position: fixed; top: 24px; left: 50%; transform: translateX(-50%); z-index: 100; pointer-events: none; }
+#toast-root { position: fixed; top: calc(env(safe-area-inset-top) + 16px); left: 50%; transform: translateX(-50%); z-index: 100; pointer-events: none; }
 .toast {
   background: var(--toast-bg); color: var(--toast-fg);
   padding: 10px 20px;
@@ -453,3 +463,46 @@ textarea.input { resize: vertical; }
   white-space: nowrap;
 }
 .toast.show { opacity: 1; transform: translateY(0); }
+
+/* ---------- 自定义分类 ---------- */
+.chip-add {
+  border-style: dashed;
+  color: var(--primary-dark);
+  background: var(--primary-light);
+  font-weight: 600;
+}
+.cat-row {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--input-bg-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px 12px;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+.cat-row .icon-btn { color: var(--danger); }
+
+/* ---------- 动作图片说明 ---------- */
+img { max-width: 100%; }
+.img-pick { display: flex; align-items: center; gap: 12px; }
+.img-thumb {
+  width: 84px; height: 84px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  display: block;
+}
+.img-tip { font-size: 12px; color: var(--muted); line-height: 1.6; flex: 1; }
+.ex-thumb {
+  width: 100%; height: 86px;
+  object-fit: cover;
+  border-radius: 10px;
+  display: block;
+}
+.ex-detail-img {
+  width: 100%;
+  border-radius: 14px;
+  margin: 4px 0 10px;
+  display: block;
+  border: 1px solid var(--border);
+}
