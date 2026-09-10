@@ -143,6 +143,7 @@ body {
 .day-record-name { font-weight: 600; font-size: 14px; overflow-wrap: anywhere; }
 .day-record-detail { font-size: 12px; color: var(--muted); margin-top: 2px; line-height: 1.5; overflow-wrap: anywhere; }
 .day-record-main { flex: 1; min-width: 0; }
+.dr-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 10px; flex: 0 0 auto; display: block; }
 
 /* ---------- 按钮 ---------- */
 .btn {
@@ -296,6 +297,7 @@ textarea.input { resize: vertical; }
   cursor: pointer;
 }
 .cf-item-name { font-weight: 600; font-size: 15px; flex: 1; }
+.cf-thumb { width: 30px; height: 30px; object-fit: cover; border-radius: 8px; flex: 0 0 auto; display: block; }
 .cf-item-sum { font-size: 12px; color: var(--muted); }
 .cf-item-arrow { color: var(--muted); font-size: 13px; transition: transform .2s; }
 .cf-item-arrow.open { transform: rotate(180deg); }
@@ -341,7 +343,11 @@ textarea.input { resize: vertical; }
   width: 100%;
 }
 .ph-item.active { border-color: var(--primary); background: var(--primary-light); }
-.ph-emoji { font-size: 16px; letter-spacing: 1px; flex: 0 0 auto; }
+/* 历史打卡行的动作名预览（原来这里是一串动作 emoji，已改为文字） */
+.ph-names {
+  flex: 0 0 auto; max-width: 34%; font-size: 12px; color: var(--muted);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 .ph-label { flex: 1; font-size: 13px; color: var(--text); }
 .ph-badge { font-size: 11px; color: var(--primary-dark); font-weight: 600; flex: 0 0 auto; }
 .ph-empty { text-align: center; font-size: 12px; color: var(--muted); padding: 8px 0; }
@@ -430,6 +436,7 @@ textarea.input { resize: vertical; }
 }
 .top-list li:last-child { border-bottom: 0; }
 .top-name { flex: 1; font-size: 14px; }
+.top-thumb { width: 30px; height: 30px; object-fit: cover; border-radius: 8px; flex: 0 0 auto; display: block; }
 .top-count {
   background: var(--primary-light); color: var(--primary-dark);
   border-radius: 999px;
@@ -451,6 +458,15 @@ textarea.input { resize: vertical; }
 .theme-dot.active { border-color: var(--text); box-shadow: 0 0 0 3px var(--card), 0 0 0 5px var(--primary); }
 .theme-name { font-size: 12px; color: var(--muted); margin-top: 10px; }
 .howto { padding-left: 18px; font-size: 13px; color: var(--muted); line-height: 1.9; }
+
+/* ---------- 版本卡片 ---------- */
+.ver-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 4px; }
+.ver-badge {
+  flex: 0 0 auto; padding: 3px 10px; border-radius: 999px;
+  background: var(--primary); color: #fff; font-size: 12px; font-weight: 600; line-height: 1.5;
+}
+.ver-note { flex: 1; min-width: 0; font-size: 12px; color: var(--muted); line-height: 1.6; }
+.ver-note b { color: var(--text); }
 
 /* ---------- 空状态 ---------- */
 .empty { text-align: center; color: var(--muted); padding: 30px 0; font-size: 14px; }

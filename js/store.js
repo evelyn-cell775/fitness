@@ -1,5 +1,9 @@
 /* 数据层：localStorage 读写、统计、导入导出 */
 
+// 应用版本号：与 sw.js 里的 CACHE 保持同步（fitness- + APP_VERSION）
+// 改代码后请把这里和 sw.js 的 CACHE 一起加 1，手机端才能自动识别到新版本
+const APP_VERSION = 'v9';
+
 // 动作分类（固定列表，emoji 用于分类标签展示）
 const CATEGORIES = [
   { id: 'chest', name: '胸部', emoji: '💪' },

@@ -13,6 +13,20 @@ function esc(s) {
   }[c]));
 }
 
+// 取动作的图片说明：先按 id 找，找不到再按名字找；没有图片返回空串
+// （动作自带的 emoji 已不再展示，统一以图片为准，没图就只显示文字）
+function exImgOf(id, name) {
+  const exs = Store.getExercises();
+  let e = id ? exs.find(x => x.id === id) : null;
+  if (!e && name) e = exs.find(x => x.name === name);
+  return e && e.img ? e.img : '';
+}
+
+// 缩略图 HTML：有图才渲染 img，无图什么都不显示
+function thumbHtml(src, cls) {
+  return src ? `<img class="${cls}" src="${src}" alt="">` : '';
+}
+
 // 图片压缩：手机拍照动辄几 MB，直接存 localStorage 会爆。压到最长边 1000px 的 JPEG
 function compressImage(file, maxSize = 1000, quality = 0.72) {
   return new Promise((resolve, reject) => {
@@ -183,7 +197,7 @@ function calendarCellsHtml() {
 function dayRecordHtml(r) {
   return `
     <div class="day-record">
-      <span class="ex-emoji">${r.emoji || '💪'}</span>
+      ${thumbHtml(exImgOf(r.exId, r.exName), 'dr-thumb')}
       <div class="day-record-main">
         <div class="day-record-name">${esc(r.exName)}</div>
         <div class="day-record-detail">${recordSummary(r)}</div>
@@ -448,7 +462,6 @@ function openExerciseDetail(id) {
     title: e.name,
     content: `
       <div class="ex-detail">
-        <div class="ex-detail-emoji">${e.emoji}</div>
         <div class="ex-detail-meta"><span class="tag">${esc(catName(e.category))}</span></div>
         ${e.img ? `<img class="ex-detail-img" src="${e.img}" alt="${esc(e.name)} 图片说明">` : ''}
         ${e.desc ? `<p class="ex-detail-desc">${esc(e.desc)}</p>` : ''}
@@ -667,11 +680,11 @@ function renderPhList() {
   const yesterday = addDays(todayStr(), -1);
   phEl.innerHTML = dates.map(ds => {
     const recs = Store.checkins[ds];
-    const emojis = recs.slice(0, 4).map(r => r.emoji || '💪').join('');
+    const names = recs.slice(0, 2).map(r => r.exName).join('、') + (recs.length > 2 ? '…' : '');
     const active = pickerState.copied && pickerState.copied.dateStr === ds;
     return `
     <button class="ph-item${active ? ' active' : ''}" data-date="${ds}">
-      <span class="ph-emoji">${emojis}</span>
+      <span class="ph-names">${esc(names)}</span>
       <span class="ph-label">${esc(dateLabel(ds))}${ds === yesterday ? '（昨天）' : ''} · ${recs.length} 个动作</span>
       <span class="ph-badge">${active ? '✓ 已复制' : '复制'}</span>
     </button>`;
@@ -697,7 +710,7 @@ function renderPickerList() {
         return `
         <button class="ex-card pick${on ? ' selected' : ''}" data-id="${e.id}">
           <span class="ex-check">${on ? '✓' : ''}</span>
-          <span class="ex-emoji">${e.emoji}</span>
+          ${thumbHtml(e.img, 'ex-thumb')}
           <span class="ex-name">${esc(e.name)}</span>
           <span class="ex-cat">${esc(catName(e.category))}</span>
         </button>`;
@@ -771,7 +784,7 @@ function itemCardHtml(it, i) {
   return `
   <div class="cf-item" data-i="${i}">
     <div class="cf-item-head" data-toggle>
-      <span class="ex-emoji" style="font-size:22px">${it.emoji}</span>
+      ${thumbHtml(exImgOf(it.exId, it.exName), 'cf-thumb')}
       <span class="cf-item-name">${esc(it.exName)}</span>
       <span class="cf-item-sum">${setSummary(it)}</span>
       <button class="icon-btn" data-remove title="移除">✕</button>
@@ -1038,6 +1051,25 @@ function openMaterialForm(m) {
   });
 }
 
+// 版本卡片：一眼看出手机跑的是哪一版；发现新版本可一键清缓存更新
+function versionCardHtml() {
+  const av = (typeof Update !== 'undefined' && Update.available) ? Update.available : null;
+  return `
+    <section class="card">
+      <h3>版本</h3>
+      <div class="ver-row">
+        <span class="ver-badge">${esc(APP_VERSION)}</span>
+        <span class="ver-note">${av
+          ? `服务器上是 <b>${esc(av)}</b>，你手机还在用旧的`
+          : '已是最新版本（更新后打不开新功能时，点下面按钮强制刷新）'}</span>
+      </div>
+      ${av
+        ? `<button class="btn btn-block btn-primary" data-action="hard-reload">🆕 更新到 ${esc(av)}</button>`
+        : `<button class="btn btn-block" data-action="hard-reload">🔄 强制更新（清缓存重载）</button>`}
+    </section>
+  `;
+}
+
 // ---------- Tab 4：统计与备份 ----------
 function renderStats() {
   const s = Store.stats();
@@ -1053,7 +1085,7 @@ function renderStats() {
   }
   const top = s.top.map(([name, count]) => {
     const e = Store.getExercises().find(x => x.name === name);
-    return { name, count, emoji: e ? e.emoji : '💪' };
+    return { name, count, img: e && e.img ? e.img : '' };
   });
   page.innerHTML = `
     <header class="page-head"><h1>统计</h1></header>
@@ -1077,7 +1109,7 @@ function renderStats() {
       <h3>最常练动作</h3>
       ${top.length
         ? `<ul class="top-list">${top.map(t => `
-            <li><span class="ex-emoji" style="font-size:22px">${t.emoji}</span>
+            <li>${thumbHtml(t.img, 'top-thumb')}
             <span class="top-name">${esc(t.name)}</span>
             <span class="top-count">${t.count} 次</span></li>`).join('')}</ul>`
         : `<div class="empty"><span class="big">🏋️</span>还没有训练记录，快去打卡吧</div>`}
@@ -1090,6 +1122,7 @@ function renderStats() {
       </div>
       <p class="theme-name">当前：${esc(themeName(Store.theme))}（点击圆点立即切换）</p>
     </section>
+    ${versionCardHtml()}
     ${syncCardHtml()}
     <section class="card">
       <h3>数据备份</h3>

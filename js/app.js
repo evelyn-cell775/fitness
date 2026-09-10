@@ -1,6 +1,41 @@
 /* 入口与全局交互 */
 let currentTab = 'today';
 
+// 版本自检：对比线上 sw.js 的 CACHE 与本机构建的 APP_VERSION
+const Update = { available: null };
+
+async function checkUpdate() {
+  try {
+    const res = await fetch('sw.js?_=' + Date.now(), { cache: 'no-store' });
+    const txt = await res.text();
+    const m = txt.match(/CACHE\s*=\s*['"]([^'"]+)['"]/);
+    if (!m) return;
+    const online = m[1];                       // 形如 fitness-v8
+    const local = 'fitness-' + APP_VERSION;
+    if (online !== local) {
+      Update.available = online.replace(/^fitness-/, '');
+      if (currentTab === 'stats') renderStats();
+    } else {
+      Update.available = null;
+    }
+  } catch (e) { /* 离线或取不到就忽略，不影响使用 */ }
+}
+
+// 强制更新：注销 Service Worker + 清空缓存 + 带时间戳重载（本地数据不受影响）
+async function hardReload() {
+  try {
+    if ('serviceWorker' in navigator) {
+      const rs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(rs.map(r => r.unregister()));
+    }
+  } catch (e) {}
+  try {
+    const ks = await caches.keys();
+    await Promise.all(ks.map(k => caches.delete(k)));
+  } catch (e) {}
+  location.replace(location.pathname + '?_=' + Date.now());
+}
+
 function switchTab(name) {
   currentTab = name;
   document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
@@ -43,7 +78,14 @@ document.addEventListener('click', e => {
     else if (act === 'sync-help') openSyncHelp();
     else if (act === 'sync-now') Sync.syncNow();
     else if (act === 'sync-off') Sync.turnOff();
-    else if (act === 'sync-restore') {
+    else if (act === 'hard-reload') {
+      confirmDialog({
+        title: '强制更新',
+        message: '会清空手机上的网页缓存并重新从服务器拉取最新文件。你的打卡数据不会丢失（数据存在浏览器存储里，不受缓存清理影响）。',
+        okText: '立即更新',
+        onOk: () => hardReload(),
+      });
+    } else if (act === 'sync-restore') {
       confirmDialog({
         title: '从云端恢复',
         message: '将用云端备份覆盖本机当前数据，确定吗？',
@@ -136,9 +178,10 @@ switchTab(currentTab);
 
 // 云同步自检：换手机 / 清过缓存时自动把数据拉回来
 Sync.boot();
-// 从后台切回前台、网络恢复时，补一次同步（不打断使用）
+// 启动时 + 从后台切回前台时，检查服务器上有没有新版本
+checkUpdate();
 document.addEventListener('visibilitychange', () => {
-  if (!document.hidden && Sync.on) Sync.boot();
+  if (!document.hidden) { checkUpdate(); if (Sync.on) Sync.boot(); }
 });
 window.addEventListener('online', () => { if (Sync.on) Sync.boot(); });
 
